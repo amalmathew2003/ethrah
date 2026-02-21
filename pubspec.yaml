@@ -1,0 +1,40 @@
+name: ethrah_app
+description: "Ethrah - Where Elegance Meets Tradition. A premium showcase website for ethnic wear and jewelry brand."
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.2
+
+  # State Management (optional, for future features)
+  provider: ^6.0.0
+
+  # Navigation & Routing
+  flutter_native_splash: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Fonts are loaded via google_fonts package (no local font files needed)
+
+# Notes:
+# 1. Run: flutter pub get
+# 2. For web: flutter run -d chrome
+# 3. For responsive design: web uses LayoutBuilder and MediaQuery
+# 4. All fonts are loaded via google_fonts package for better performance
