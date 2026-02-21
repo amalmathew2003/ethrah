@@ -21,6 +21,7 @@ dependencies:
 
   # Navigation & Routing
   flutter_native_splash: ^2.3.0
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:

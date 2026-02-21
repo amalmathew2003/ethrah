@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
 import '../data/dummy_data.dart';
@@ -15,7 +16,8 @@ class CollectionsScreen extends StatefulWidget {
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
-  String _selectedFilter = 'all'; // 'all', 'ethnic', 'contemporary', 'jewellery'
+  String _selectedFilter =
+      'all'; // 'all', 'ethnic', 'contemporary', 'jewellery'
 
   List _getFilteredCollections() {
     if (_selectedFilter == 'all') {
@@ -35,17 +37,20 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AppNavBar(currentRoute: AppRoutes.collections),
-            
+            const AppNavBar(currentRoute: AppRoutes.collections)
+                .animate()
+                .fadeIn(duration: 600.ms)
+                .slideY(begin: -0.2, end: 0),
+
             // Header
             _buildHeader(isMobile),
-            
+
             // Filter Section
             _buildFilterSection(isMobile),
-            
+
             // Collections Grid
             _buildCollectionsGrid(isMobile),
-            
+
             const AppFooter(),
           ],
         ),
@@ -73,7 +78,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
               color: AppColors.darkBrown,
               letterSpacing: -1,
             ),
-          ),
+          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
           SizedBox(height: isMobile ? 12 : 16),
           Text(
             'Curated collections of ethnic wear and jewelry for every occasion',
@@ -81,7 +86,10 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
               fontSize: isMobile ? 14 : 16,
               color: AppColors.mediumBrown,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 300.ms, duration: 800.ms)
+              .slideY(begin: 0.1, end: 0),
         ],
       ),
     );
@@ -106,15 +114,20 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: filters
-              .map((filter) => Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: _buildFilterButton(
-                      label: filter['label'] as String,
-                      value: filter['value'] as String,
-                    ),
-                  ))
-              .toList(),
+          children: filters.asMap().entries.map((entry) {
+            final index = entry.key;
+            final filter = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: _buildFilterButton(
+                label: filter['label'] as String,
+                value: filter['value'] as String,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: (index * 50).ms)
+                .slideX(begin: 0.1, end: 0);
+          }).toList(),
         ),
       ),
     );
@@ -130,7 +143,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? AppColors.gold : Colors.transparent,
@@ -139,6 +153,15 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(4),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.gold.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
         ),
         child: Text(
           label,
@@ -163,13 +186,17 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         vertical: isMobile ? 40 : 60,
       ),
       color: AppColors.cream,
-      child: Column(
-        children: collections
-            .map((collection) => _buildCollectionSection(
-              collection,
-              isMobile,
-            ))
-            .toList(),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child: Column(
+          key: ValueKey<String>(_selectedFilter),
+          children: collections
+              .map((collection) => _buildCollectionSection(
+                    collection,
+                    isMobile,
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -187,7 +214,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             fontWeight: FontWeight.w600,
             color: AppColors.darkBrown,
           ),
-        ),
+        ).animate().fadeIn().slideX(begin: -0.1, end: 0),
         const SizedBox(height: 8),
         Text(
           collection.description,
@@ -196,15 +223,15 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             color: AppColors.mediumBrown,
             height: 1.6,
           ),
-        ),
+        ).animate().fadeIn(delay: 200.ms),
         SizedBox(height: isMobile ? 24 : 32),
-        
+
         // Products Grid
         LayoutBuilder(
           builder: (context, constraints) {
             final crossAxisCount = isMobile ? 1 : 3;
             final childAspectRatio = isMobile ? 0.65 : 0.65;
-            
+
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -218,12 +245,15 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
               itemBuilder: (context, index) {
                 return ProductCard(
                   product: collection.products[index],
-                );
+                )
+                    .animate()
+                    .fadeIn(delay: (index * 150).ms, duration: 600.ms)
+                    .slideY(begin: 0.2, end: 0);
               },
             );
           },
         ),
-        
+
         SizedBox(height: isMobile ? 48 : 64),
       ],
     );

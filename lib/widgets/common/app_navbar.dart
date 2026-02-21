@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_routes.dart';
 
@@ -42,15 +43,23 @@ class _AppNavBarState extends State<AppNavBar> {
   Widget _buildDesktopNav(BuildContext context) {
     return Row(
       children: [
-        _buildLogo(context),
+        _buildLogo(context)
+            .animate()
+            .fadeIn(duration: 600.ms)
+            .slideX(begin: -0.2, end: 0),
         const Spacer(),
         Row(
-          children: _navItems.map((item) {
+          children: _navItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
             return _buildNavLink(
               context,
               label: item['label']!,
               route: item['route']!,
-            );
+            )
+                .animate()
+                .fadeIn(delay: (index * 100).ms, duration: 400.ms)
+                .slideY(begin: -0.2, end: 0);
           }).toList(),
         ),
       ],
@@ -66,9 +75,13 @@ class _AppNavBarState extends State<AppNavBar> {
             const Spacer(),
             IconButton(
               onPressed: () => setState(() => _isMenuOpen = !_isMenuOpen),
-              icon: Icon(
-                _isMenuOpen ? Icons.close : Icons.menu,
-                color: AppColors.darkBrown,
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Icon(
+                  _isMenuOpen ? Icons.close : Icons.menu,
+                  key: ValueKey<bool>(_isMenuOpen),
+                  color: AppColors.darkBrown,
+                ),
               ),
             ),
           ],
@@ -76,12 +89,17 @@ class _AppNavBarState extends State<AppNavBar> {
         if (_isMenuOpen) ...[
           const SizedBox(height: 16),
           Column(
-            children: _navItems.map((item) {
+            children: _navItems.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
               return _buildMobileNavLink(
                 context,
                 label: item['label']!,
                 route: item['route']!,
-              );
+              )
+                  .animate()
+                  .fadeIn(delay: (index * 50).ms)
+                  .slideX(begin: 0.1, end: 0);
             }).toList(),
           ),
         ],
@@ -111,35 +129,14 @@ class _AppNavBarState extends State<AppNavBar> {
   }) {
     final isActive = widget.currentRoute == route;
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 32),
-      child: GestureDetector(
-        onTap: () {
-          if (widget.currentRoute != route) {
-            Navigator.pushNamed(context, route);
-          }
-        },
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? AppColors.gold : AppColors.darkBrown,
-              ),
-            ),
-            if (isActive) ...[
-              const SizedBox(height: 4),
-              Container(
-                height: 1.5,
-                width: 20,
-                color: AppColors.gold,
-              ),
-            ],
-          ],
-        ),
-      ),
+    return _NavLink(
+      label: label,
+      isActive: isActive,
+      onTap: () {
+        if (widget.currentRoute != route) {
+          Navigator.pushNamed(context, route);
+        }
+      },
     );
   }
 
@@ -171,6 +168,63 @@ class _AppNavBarState extends State<AppNavBar> {
             fontSize: 15,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             color: isActive ? AppColors.gold : AppColors.darkBrown,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavLink extends StatefulWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _NavLink({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  State<_NavLink> createState() => _NavLinkState();
+}
+
+class _NavLinkState extends State<_NavLink> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 32),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.label,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight:
+                      widget.isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: (widget.isActive || _isHovered)
+                      ? AppColors.gold
+                      : AppColors.darkBrown,
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 1.5,
+                width: (widget.isActive || _isHovered) ? 24 : 0,
+                color: AppColors.gold,
+                curve: Curves.easeOut,
+              ),
+            ],
           ),
         ),
       ),

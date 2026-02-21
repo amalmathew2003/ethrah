@@ -38,16 +38,21 @@ class _ProductCardState extends State<ProductCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: _navigateToDetail,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          transform: _isHovered
+              ? Matrix4.translationValues(0, -8, 0)
+              : Matrix4.identity(),
           decoration: BoxDecoration(
             color: AppColors.ivory,
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
                 color: AppColors.shadow
-                    .withValues(alpha: _isHovered ? 0.12 : 0.08),
-                blurRadius: _isHovered ? 16 : 12,
-                offset: Offset(0, _isHovered ? 8 : 4),
+                    .withValues(alpha: _isHovered ? 0.15 : 0.08),
+                blurRadius: _isHovered ? 24 : 12,
+                offset: Offset(0, _isHovered ? 12 : 4),
               ),
             ],
           ),
@@ -68,39 +73,56 @@ class _ProductCardState extends State<ProductCard> {
                     color: AppColors.lightBeige,
                   ),
                   child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      // Product Image
-                      Image.network(
-                        widget.product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: AppColors.beige,
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                color: AppColors.mediumBrown,
-                                size: 48,
+                      // Product Image with Scale
+                      AnimatedScale(
+                        scale: _isHovered ? 1.05 : 1.0,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                        child: Image.network(
+                          widget.product.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: AppColors.beige,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  color: AppColors.mediumBrown,
+                                  size: 48,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                       // Hover Overlay
-                      if (_isHovered)
-                        Container(
-                          color: AppColors.darkOverlay,
+                      AnimatedOpacity(
+                        opacity: _isHovered ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          color: AppColors.darkOverlay.withValues(alpha: 0.3),
                           child: Center(
-                            child: Text(
-                              'View Details',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
                                 color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'View Details',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.darkBrown,
+                                ),
                               ),
                             ),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -147,7 +169,7 @@ class _ProductCardState extends State<ProductCard> {
                         widget.product.price,
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.gold,
                         ),
                       ),
