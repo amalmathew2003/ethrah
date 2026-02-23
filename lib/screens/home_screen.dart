@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
 import '../data/dummy_data.dart';
@@ -16,35 +17,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-
-  @override
-  void initState() {
-    super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _fadeController.forward();
-      _slideController.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    super.dispose();
-  }
-
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
@@ -55,7 +28,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           children: [
             // Navigation Bar
-            const AppNavBar(currentRoute: AppRoutes.home),
+            const AppNavBar(currentRoute: AppRoutes.home)
+                .animate()
+                .fadeIn(duration: 600.ms)
+                .slideY(begin: -0.2, end: 0),
 
             // Hero Banner Section
             _buildHeroBanner(isMobile),
@@ -82,83 +58,82 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   /// Hero Banner with brand name and tagline
   Widget _buildHeroBanner(bool isMobile) {
-    return FadeTransition(
-      opacity: _fadeController,
-      child: Container(
-        width: double.infinity,
-        height: isMobile ? 500 : 700,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.ivory,
-              AppColors.cream,
-              AppColors.lightBeige,
-            ],
-          ),
-          image: DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1200&q=80',
-            ),
-            fit: BoxFit.cover,
-            opacity: 0.15,
-          ),
+    return Container(
+      width: double.infinity,
+      height: isMobile ? 500 : 700,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.ivory,
+            AppColors.cream,
+            AppColors.lightBeige,
+          ],
         ),
-        child: Center(
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.3),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
-            ),
-            child: Column(
+        image: DecorationImage(
+          image: NetworkImage(
+            'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1200&q=80',
+          ),
+          fit: BoxFit.cover,
+          opacity: 0.15,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Ethrah',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: isMobile ? 56 : 96,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkBrown,
+                letterSpacing: -2,
+              ),
+            )
+                .animate()
+                .fadeIn(duration: 800.ms, curve: Curves.easeOut)
+                .slideY(begin: 0.3, end: 0)
+                .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1)),
+            SizedBox(height: isMobile ? 12 : 20),
+            Text(
+              'Where Elegance Meets Tradition',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 16 : 24,
+                fontWeight: FontWeight.w300,
+                color: AppColors.mediumBrown,
+                letterSpacing: 2,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 400.ms, duration: 800.ms)
+                .slideY(begin: 0.1, end: 0),
+            SizedBox(height: isMobile ? 32 : 48),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Ethrah',
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: isMobile ? 56 : 96,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.darkBrown,
-                    letterSpacing: -2,
+                PrimaryButton(
+                  text: 'Explore Collections',
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.collections,
                   ),
                 ),
-                SizedBox(height: isMobile ? 12 : 20),
-                Text(
-                  'Where Elegance Meets Tradition',
-                  style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 16 : 24,
-                    fontWeight: FontWeight.w300,
-                    color: AppColors.mediumBrown,
-                    letterSpacing: 2,
+                SizedBox(width: isMobile ? 12 : 16),
+                SecondaryButton(
+                  text: 'Learn More',
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.about,
                   ),
-                ),
-                SizedBox(height: isMobile ? 32 : 48),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    PrimaryButton(
-                      text: 'Explore Collections',
-                      onPressed: () => Navigator.pushNamed(
-                        context,
-                        AppRoutes.collections,
-                      ),
-                    ),
-                    SizedBox(width: isMobile ? 12 : 16),
-                    SecondaryButton(
-                      text: 'Learn More',
-                      onPressed: () => Navigator.pushNamed(
-                        context,
-                        AppRoutes.about,
-                      ),
-                    ),
-                  ],
                 ),
               ],
-            ),
-          ),
+            )
+                .animate()
+                .fadeIn(delay: 800.ms, duration: 600.ms)
+                .scaleY(begin: 0.8, end: 1),
+          ],
         ),
       ),
     );
@@ -183,7 +158,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontWeight: FontWeight.w600,
               color: AppColors.darkBrown,
             ),
-          ),
+          ).animate().shimmer(
+              delay: 2.seconds,
+              duration: 2.seconds,
+              color: AppColors.gold.withValues(alpha: 0.2)),
+
           SizedBox(height: isMobile ? 12 : 20),
           Text(
             'Discover our curated selection of ethnic and contemporary wear',
@@ -192,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               color: AppColors.mediumBrown,
               height: 1.6,
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: isMobile ? 40 : 60),
 
           // Products Grid
@@ -200,6 +179,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             builder: (context, constraints) {
               final crossAxisCount = isMobile ? 1 : 3;
               final childAspectRatio = isMobile ? 0.65 : 0.65;
+              final products = [
+                DummyData.ethnicSaree,
+                DummyData.contemporarySalwar,
+                DummyData.jewellerySets,
+              ];
 
               return GridView.builder(
                 shrinkWrap: true,
@@ -212,12 +196,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 itemCount: 3,
                 itemBuilder: (context, index) {
-                  final products = [
-                    DummyData.ethnicSaree,
-                    DummyData.contemporarySalwar,
-                    DummyData.jewellerySets,
-                  ];
-                  return ProductCard(product: products[index]);
+                  return ProductCard(product: products[index])
+                      .animate()
+                      .fadeIn(delay: (index * 200).ms, duration: 600.ms)
+                      .slideY(begin: 0.2, end: 0);
                 },
               );
             },
@@ -230,7 +212,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               context,
               AppRoutes.collections,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 800.ms)
+              .scale(begin: const Offset(0.9, 0.9)),
         ],
       ),
     );
@@ -257,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   fit: BoxFit.cover,
                   height: 400,
                 ),
-              ),
+              ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.1, end: 0),
             ),
           if (!isMobile) const SizedBox(width: 60),
 
@@ -273,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontWeight: FontWeight.w600,
                     color: AppColors.darkBrown,
                   ),
-                ),
+                ).animate().fadeIn().slideX(begin: 0.1, end: 0),
                 SizedBox(height: isMobile ? 16 : 24),
                 Text(
                   DummyData.brandInfo.story,
@@ -282,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: AppColors.darkBrown,
                     height: 1.8,
                   ),
-                ),
+                ).animate().fadeIn(delay: 200.ms),
                 SizedBox(height: isMobile ? 24 : 32),
                 SecondaryButton(
                   text: 'Read Full Story',
@@ -290,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     context,
                     AppRoutes.about,
                   ),
-                ),
+                ).animate().fadeIn(delay: 400.ms),
               ],
             ),
           ),
@@ -317,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontWeight: FontWeight.w600,
               color: AppColors.darkBrown,
             ),
-          ),
+          ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95)),
           SizedBox(height: isMobile ? 12 : 20),
           Text(
             'Moments of elegance and tradition',
@@ -325,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontSize: isMobile ? 14 : 16,
               color: AppColors.mediumBrown,
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: isMobile ? 40 : 60),
 
           // Gallery Grid
@@ -346,7 +331,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 itemBuilder: (context, index) {
                   return GalleryCard(
                     item: DummyData.galleryItems[index],
-                  );
+                  )
+                      .animate()
+                      .fadeIn(delay: (index * 100).ms, duration: 400.ms)
+                      .scale(begin: const Offset(0.8, 0.8));
                 },
               );
             },
@@ -359,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               context,
               AppRoutes.gallery,
             ),
-          ),
+          ).animate().fadeIn(delay: 1.seconds),
         ],
       ),
     );
@@ -383,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontWeight: FontWeight.w600,
               color: AppColors.gold,
             ),
-          ),
+          ).animate().shimmer(duration: 3.seconds, color: Colors.white24),
           SizedBox(height: isMobile ? 12 : 16),
           Text(
             'Have questions? We\'d love to hear from you.',
@@ -391,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontSize: isMobile ? 14 : 16,
               color: AppColors.ivory,
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: isMobile ? 24 : 32),
           PrimaryButton(
             text: 'Contact Us',
@@ -399,7 +387,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               context,
               AppRoutes.contact,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 400.ms)
+              .shake(delay: 2.seconds, hz: 4, curve: Curves.easeInOut),
         ],
       ),
     );

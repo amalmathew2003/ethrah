@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../config/app_colors.dart';
 import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
@@ -42,7 +43,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AppNavBar(currentRoute: '/gallery'),
+            const AppNavBar(currentRoute: '/gallery')
+                .animate()
+                .fadeIn(duration: 600.ms)
+                .slideY(begin: -0.2, end: 0),
 
             // Header
             _buildHeader(isMobile),
@@ -80,7 +84,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
               color: AppColors.darkBrown,
               letterSpacing: -1,
             ),
-          ),
+          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
           SizedBox(height: isMobile ? 12 : 16),
           Text(
             'Explore our curated moments of elegance and tradition',
@@ -88,7 +92,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
               fontSize: isMobile ? 14 : 16,
               color: AppColors.mediumBrown,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 300.ms, duration: 800.ms)
+              .slideY(begin: 0.1, end: 0),
         ],
       ),
     );
@@ -113,15 +120,20 @@ class _GalleryScreenState extends State<GalleryScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: categories
-              .map((category) => Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildFilterTab(
-                      label: category == 'all' ? 'All' : category,
-                      value: category == 'all' ? 'all' : category,
-                    ),
-                  ))
-              .toList(),
+          children: categories.asMap().entries.map((entry) {
+            final index = entry.key;
+            final category = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildFilterTab(
+                label: category == 'all' ? 'All' : category,
+                value: category == 'all' ? 'all' : category,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: (index * 50).ms)
+                .slideX(begin: 0.1, end: 0);
+          }).toList(),
         ),
       ),
     );
@@ -142,7 +154,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? AppColors.gold : Colors.transparent,
@@ -151,6 +164,15 @@ class _GalleryScreenState extends State<GalleryScreen> {
             width: isActive ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(4),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.gold.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
         ),
         child: Text(
           label,
@@ -177,22 +199,29 @@ class _GalleryScreenState extends State<GalleryScreen> {
         builder: (context, constraints) {
           final crossAxisCount = isMobile ? 2 : 4;
 
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: isMobile ? 8 : 16,
-              mainAxisSpacing: isMobile ? 8 : 16,
-              childAspectRatio: 1,
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: GridView.builder(
+              key: ValueKey<String>(_selectedFilter),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: isMobile ? 8 : 16,
+                mainAxisSpacing: isMobile ? 8 : 16,
+                childAspectRatio: 1,
+              ),
+              itemCount: _filteredGallery.length,
+              itemBuilder: (context, index) {
+                return GalleryCard(
+                  item: _filteredGallery[index],
+                  onTap: () => _showGalleryModal(index),
+                )
+                    .animate()
+                    .fadeIn(delay: (index * 50).ms, duration: 400.ms)
+                    .scale(begin: const Offset(0.9, 0.9));
+              },
             ),
-            itemCount: _filteredGallery.length,
-            itemBuilder: (context, index) {
-              return GalleryCard(
-                item: _filteredGallery[index],
-                onTap: () => _showGalleryModal(index),
-              );
-            },
           );
         },
       ),
@@ -201,94 +230,107 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   /// Modal to view full image
   void _showGalleryModal(int index) {
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Black backdrop
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.7),
-              ),
-            ),
-            // Image Container
-            Center(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.9,
-                  maxHeight: MediaQuery.of(context).size.height * 0.85,
-                ),
-                child: Image.network(
-                  _filteredGallery[index].imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            // Close Button
-            Positioned(
-              top: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    color: AppColors.darkBrown,
-                    size: 24,
+      barrierDismissible: true,
+      barrierLabel: 'Gallery Preview',
+      barrierColor: Colors.black.withValues(alpha: 0.8),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Image Container
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.transparent,
                   ),
                 ),
-              ),
-            ),
-            // Title at Bottom
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _filteredGallery[index].title,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                Center(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                      maxHeight: MediaQuery.of(context).size.height * 0.85,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        _filteredGallery[index].imageUrl,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    if (_filteredGallery[index].category != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _filteredGallery[index].category!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppColors.gold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
+                ).animate().scale(begin: const Offset(0.9, 0.9)).fadeIn(),
+                // Close Button
+                Positioned(
+                  top: 40,
+                  right: 40,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 32),
+                    onPressed: () => Navigator.pop(context),
+                  ).animate().fadeIn(delay: 200.ms),
                 ),
-              ),
+                // Title at Bottom
+                Positioned(
+                  bottom: 40,
+                  left: 40,
+                  right: 40,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _filteredGallery[index].title,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (_filteredGallery[index].category != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              _filteredGallery[index].category!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppColors.gold,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
+      transitionBuilder: (context, a1, a2, child) {
+        return FadeTransition(
+          opacity: a1,
+          child: child,
+        );
+      },
     );
   }
 }

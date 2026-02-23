@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../config/app_colors.dart';
 import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
@@ -54,7 +55,10 @@ class _ContactScreenState extends State<ContactScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AppNavBar(currentRoute: '/contact'),
+            const AppNavBar(currentRoute: '/contact')
+                .animate()
+                .fadeIn(duration: 600.ms)
+                .slideY(begin: -0.2, end: 0),
 
             // Header
             _buildHeader(isMobile),
@@ -92,7 +96,7 @@ class _ContactScreenState extends State<ContactScreen> {
               color: AppColors.darkBrown,
               letterSpacing: -1,
             ),
-          ),
+          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
           SizedBox(height: isMobile ? 12 : 16),
           Text(
             'We\'d love to hear from you. Send us a message!',
@@ -100,7 +104,10 @@ class _ContactScreenState extends State<ContactScreen> {
               fontSize: isMobile ? 14 : 16,
               color: AppColors.mediumBrown,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 300.ms, duration: 800.ms)
+              .slideY(begin: 0.1, end: 0),
         ],
       ),
     );
@@ -127,11 +134,17 @@ class _ContactScreenState extends State<ContactScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _buildContactForm(isMobile),
+                  child: _buildContactForm(isMobile)
+                      .animate()
+                      .fadeIn(duration: 800.ms)
+                      .slideX(begin: -0.1, end: 0),
                 ),
                 const SizedBox(width: 60),
                 Expanded(
-                  child: _buildContactInfo(isMobile),
+                  child: _buildContactInfo(isMobile)
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 800.ms)
+                      .slideX(begin: 0.1, end: 0),
                 ),
               ],
             ),
@@ -238,7 +251,7 @@ class _ContactScreenState extends State<ContactScreen> {
           PrimaryButton(
             text: 'Send Message',
             onPressed: _submitForm,
-          ),
+          ).animate().scale(begin: const Offset(0.9, 0.9)),
         ],
       ),
     );
@@ -378,73 +391,11 @@ class _ContactScreenState extends State<ContactScreen> {
     required String value,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return _ContactCard(
+      icon: icon,
+      title: title,
+      value: value,
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.ivory,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: AppColors.border,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.lightGold.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.gold,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.gold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.darkBrown,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward,
-              color: AppColors.gold,
-              size: 18,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -490,7 +441,9 @@ class _ContactScreenState extends State<ContactScreen> {
                     Icons.map_outlined,
                     size: 48,
                     color: AppColors.mediumBrown,
-                  ),
+                  )
+                      .animate()
+                      .slideY(begin: -0.1, end: 0.1, duration: 2.seconds),
                   const SizedBox(height: 16),
                   Text(
                     'Google Map Placeholder',
@@ -510,8 +463,119 @@ class _ContactScreenState extends State<ContactScreen> {
                 ],
               ),
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(duration: 800.ms)
+              .scale(begin: const Offset(0.98, 0.98)),
         ],
+      ),
+    );
+  }
+}
+
+class _ContactCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  const _ContactCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  State<_ContactCard> createState() => _ContactCardState();
+}
+
+class _ContactCardState extends State<_ContactCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? AppColors.lightGold.withValues(alpha: 0.1)
+                : AppColors.ivory,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: _isHovered ? AppColors.gold : AppColors.border,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow
+                    .withValues(alpha: _isHovered ? 0.12 : 0.06),
+                blurRadius: _isHovered ? 12 : 8,
+                offset: Offset(0, _isHovered ? 4 : 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _isHovered
+                      ? AppColors.gold
+                      : AppColors.lightGold.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: _isHovered ? Colors.white : AppColors.gold,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.value,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.darkBrown,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: EdgeInsets.only(left: _isHovered ? 4.0 : 0.0),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  color: AppColors.gold,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

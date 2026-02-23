@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../config/app_colors.dart';
 import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
@@ -17,7 +18,10 @@ class AboutScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AppNavBar(currentRoute: '/about'),
+            const AppNavBar(currentRoute: '/about')
+                .animate()
+                .fadeIn(duration: 600.ms)
+                .slideY(begin: -0.2, end: 0),
 
             // Header Section
             _buildHeader(isMobile),
@@ -60,7 +64,7 @@ class AboutScreen extends StatelessWidget {
               color: AppColors.darkBrown,
               letterSpacing: -1,
             ),
-          ),
+          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
           SizedBox(height: isMobile ? 16 : 24),
           Text(
             'Celebrating tradition, embracing modernity',
@@ -70,7 +74,10 @@ class AboutScreen extends StatelessWidget {
               color: AppColors.mediumBrown,
               letterSpacing: 1,
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(delay: 300.ms, duration: 800.ms)
+              .slideY(begin: 0.1, end: 0),
         ],
       ),
     );
@@ -102,12 +109,18 @@ class AboutScreen extends StatelessWidget {
               children: [
                 Expanded(
                   flex: 1,
-                  child: _buildStoryImage(),
+                  child: _buildStoryImage()
+                      .animate()
+                      .fadeIn(duration: 800.ms)
+                      .slideX(begin: -0.1, end: 0),
                 ),
                 const SizedBox(width: 60),
                 Expanded(
                   flex: 1,
-                  child: _buildStoryText(isMobile),
+                  child: _buildStoryText(isMobile)
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 800.ms)
+                      .slideX(begin: 0.1, end: 0),
                 ),
               ],
             ),
@@ -175,7 +188,7 @@ class AboutScreen extends StatelessWidget {
                   content: DummyData.brandInfo.mission,
                   icon: Icons.bolt,
                   isMobile: isMobile,
-                ),
+                ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
               ),
               if (!isMobile) const SizedBox(width: 32),
               // Vision Card
@@ -185,7 +198,10 @@ class AboutScreen extends StatelessWidget {
                   content: DummyData.brandInfo.vision,
                   icon: Icons.visibility,
                   isMobile: isMobile,
-                ),
+                )
+                    .animate()
+                    .fadeIn(delay: 200.ms, duration: 600.ms)
+                    .slideY(begin: 0.1, end: 0),
               ),
             ],
           ),
@@ -201,64 +217,66 @@ class AboutScreen extends StatelessWidget {
     required IconData icon,
     required bool isMobile,
   }) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 24 : 32),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return _InteractableCard(
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 24 : 32),
+        decoration: BoxDecoration(
+          color: AppColors.cream,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: AppColors.border,
+            width: 1,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon and Title
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.lightGold.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(
-                  icon,
-                  color: AppColors.gold,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: isMobile ? 20 : 24,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkBrown,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Icon and Title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGold.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: AppColors.gold,
+                    size: 24,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: isMobile ? 16 : 20),
-          Text(
-            content,
-            style: GoogleFonts.poppins(
-              fontSize: isMobile ? 13 : 15,
-              color: AppColors.darkBrown,
-              height: 1.8,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: isMobile ? 20 : 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBrown,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            SizedBox(height: isMobile ? 16 : 20),
+            Text(
+              content,
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 13 : 15,
+                color: AppColors.darkBrown,
+                height: 1.8,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -281,7 +299,7 @@ class AboutScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: AppColors.darkBrown,
             ),
-          ),
+          ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9)),
           SizedBox(height: isMobile ? 32 : 48),
 
           // Founder Quote Card
@@ -316,7 +334,9 @@ class AboutScreen extends StatelessWidget {
                     color: AppColors.gold,
                     height: 0.8,
                   ),
-                ),
+                )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .shimmer(duration: 2.seconds),
                 SizedBox(height: isMobile ? 8 : 16),
                 // Quote Text
                 Text(
@@ -347,7 +367,7 @@ class AboutScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1, end: 0),
         ],
       ),
     );
@@ -398,7 +418,7 @@ class AboutScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: AppColors.darkBrown,
             ),
-          ),
+          ).animate().fadeIn().shimmer(delay: 2.seconds, duration: 2.seconds),
           SizedBox(height: isMobile ? 40 : 60),
 
           // Values Grid
@@ -409,7 +429,7 @@ class AboutScreen extends StatelessWidget {
               crossAxisCount: isMobile ? 1 : 2,
               crossAxisSpacing: isMobile ? 16 : 32,
               mainAxisSpacing: isMobile ? 16 : 32,
-              childAspectRatio: 1.2,
+              childAspectRatio: isMobile ? 1.5 : 1.2,
             ),
             itemCount: values.length,
             itemBuilder: (context, index) {
@@ -419,7 +439,10 @@ class AboutScreen extends StatelessWidget {
                 description: value['description'] as String,
                 icon: value['icon'] as IconData,
                 isMobile: isMobile,
-              );
+              )
+                  .animate()
+                  .fadeIn(delay: (index * 150).ms, duration: 600.ms)
+                  .slideY(begin: 0.1, end: 0);
             },
           ),
         ],
@@ -434,59 +457,85 @@ class AboutScreen extends StatelessWidget {
     required IconData icon,
     required bool isMobile,
   }) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 20 : 24),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
+    return _InteractableCard(
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 20 : 24),
+        decoration: BoxDecoration(
+          color: AppColors.cream,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: AppColors.border,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.lightGold.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.gold,
+                size: 28,
+              ),
+            ),
+            SizedBox(height: isMobile ? 12 : 16),
+            Text(
+              title,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: isMobile ? 18 : 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.darkBrown,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 12 : 13,
+                color: AppColors.mediumBrown,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.lightGold.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.gold,
-              size: 28,
-            ),
-          ),
-          SizedBox(height: isMobile ? 12 : 16),
-          Text(
-            title,
-            style: GoogleFonts.playfairDisplay(
-              fontSize: isMobile ? 18 : 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkBrown,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: GoogleFonts.poppins(
-              fontSize: isMobile ? 12 : 13,
-              color: AppColors.mediumBrown,
-              height: 1.6,
-              textBaseline: TextBaseline.alphabetic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+    );
+  }
+}
+
+class _InteractableCard extends StatefulWidget {
+  final Widget child;
+  const _InteractableCard({required this.child});
+
+  @override
+  State<_InteractableCard> createState() => _InteractableCardState();
+}
+
+class _InteractableCardState extends State<_InteractableCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedScale(
+        scale: _isHovered ? 1.02 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: widget.child,
       ),
     );
   }
