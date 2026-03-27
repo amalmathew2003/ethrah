@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product_model.dart';
@@ -15,9 +14,10 @@ class ProductController with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  /// 📥 Fetch products
+  /// 📥 Fetch all products from Supabase
   Future<void> fetchProducts() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
@@ -28,75 +28,30 @@ class ProductController with ChangeNotifier {
 
       _products =
           (response as List).map((e) => ProductModel.fromJson(e)).toList();
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = 'Failed to fetch products: ${e.toString()}';
+      print('Error fetching products: $e');
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  /// 📤 Add product
-  Future<void> addProduct({
-    required String name,
-    required String description,
-    required double price,
-    required File imageFile,
-  }) async {
+  /// Get product by ID
+  ProductModel? getProductById(String id) {
     try {
-      _isLoading = true;
-      notifyListeners();
-
-      /// Upload image
-      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-
-      await supabase.storage.from('products').upload(fileName, imageFile);
-
-      final imageUrl = supabase.storage.from('products').getPublicUrl(fileName);
-
-      /// Insert product
-      await supabase.from('products').insert({
-        'name': name,
-        'description': description,
-        'price': price,
-        'image_url': imageUrl,
-      });
-
-      await fetchProducts();
+      return _products.firstWhere((product) => product.id == id);
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      return null;
     }
   }
 
-  /// ✏️ Update product
-  Future<void> updateProduct(ProductModel product) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      await supabase
-          .from('products')
-          .update(product.toJson())
-          .eq('id', product.id);
-
-      await fetchProducts();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    }
-  }
-
-  /// 🗑️ Delete product
-  Future<void> deleteProduct(String id) async {
-    try {
-      await supabase.from('products').delete().eq('id', id);
-
-      _products.removeWhere((p) => p.id == id);
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    }
+  /// Get products by category
+  List<ProductModel> getProductsByCategory(String category) {
+    return _products
+        .where((product) =>
+            product.category.toLowerCase() == category.toLowerCase())
+        .toList();
   }
 }

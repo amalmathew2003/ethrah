@@ -4,6 +4,10 @@ class ProductModel {
   final String description;
   final double price;
   final String imageUrl;
+  final String category;
+  final String material;
+  final String careInstructions;
+  final List<String> galleryImages;
   final bool isActive;
   final DateTime createdAt;
 
@@ -13,6 +17,10 @@ class ProductModel {
     required this.description,
     required this.price,
     required this.imageUrl,
+    required this.category,
+    required this.material,
+    required this.careInstructions,
+    required this.galleryImages,
     required this.isActive,
     required this.createdAt,
   });
@@ -23,10 +31,16 @@ class ProductModel {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: (json['price'] as num).toDouble(),
+      price: double.parse(json['price'].toString()),
       imageUrl: json['image_url'] ?? '',
+      category: json['category'] ?? 'ethnic',
+      material: json['material'] ?? '',
+      careInstructions: json['care_instructions'] ?? '',
+      galleryImages: List<String>.from(
+          json['gallery_images'] ?? [json['image_url'] ?? '']),
       isActive: json['is_active'] ?? true,
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: DateTime.parse(
+          json['created_at'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -37,6 +51,10 @@ class ProductModel {
       'description': description,
       'price': price,
       'image_url': imageUrl,
+      'category': category,
+      'material': material,
+      'care_instructions': careInstructions,
+      'gallery_images': galleryImages,
       'is_active': isActive,
     };
   }

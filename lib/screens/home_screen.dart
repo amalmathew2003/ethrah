@@ -1,6 +1,8 @@
+import 'package:ethrah_app/controller/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
 import '../data/dummy_data.dart';
@@ -18,6 +20,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch products when home screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductController>().fetchProducts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
@@ -175,31 +186,60 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: isMobile ? 40 : 60),
 
           // Products Grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = isMobile ? 1 : 3;
-              final childAspectRatio = isMobile ? 0.65 : 0.65;
-              final products = [
-                DummyData.ethnicSaree,
-                DummyData.contemporarySalwar,
-                DummyData.jewellerySets,
-              ];
+          Consumer<ProductController>(
+            builder: (context, productController, child) {
+              if (productController.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+                  ),
+                );
+              }
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: isMobile ? 16 : 24,
-                  mainAxisSpacing: isMobile ? 16 : 24,
-                  childAspectRatio: childAspectRatio,
-                ),
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return ProductCard(product: products[index])
-                      .animate()
-                      .fadeIn(delay: (index * 200).ms, duration: 600.ms)
-                      .slideY(begin: 0.2, end: 0);
+              if (productController.error != null) {
+                return Center(
+                  child: Text(
+                    'Error: ${productController.error}',
+                    style: GoogleFonts.poppins(color: AppColors.mediumBrown),
+                  ),
+                );
+              }
+
+              final products = productController.products.take(3).toList();
+
+              if (products.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No products available',
+                    style: GoogleFonts.poppins(color: AppColors.mediumBrown),
+                  ),
+                );
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = isMobile ? 1 : 3;
+                  final childAspectRatio = isMobile ? 0.65 : 0.65;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: isMobile ? 16 : 24,
+                      mainAxisSpacing: isMobile ? 16 : 24,
+                      childAspectRatio: childAspectRatio,
+                    ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        product: products[index],
+                      )
+                          .animate()
+                          .fadeIn(delay: (index * 200).ms, duration: 600.ms)
+                          .slideY(begin: 0.2, end: 0);
+                    },
+                  );
                 },
               );
             },

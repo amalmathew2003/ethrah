@@ -1,10 +1,11 @@
+import 'package:ethrah_app/controller/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
-import '../data/dummy_data.dart';
-import '../models/models.dart';
+import '../models/product_model.dart';
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/common/custom_button.dart';
@@ -22,15 +23,40 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  late Product product;
+  late ProductModel product;
   int _selectedImageIndex = 0;
   final ScrollController _scrollController = ScrollController();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Find product by ID
-    product = _getProductById(widget.productId);
+    _loadProduct();
+  }
+
+  void _loadProduct() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = context.read<ProductController>();
+      final foundProduct = controller.getProductById(widget.productId);
+
+      if (foundProduct != null) {
+        setState(() {
+          product = foundProduct;
+          _isLoading = false;
+        });
+      } else {
+        // If product not found locally, fetch all products first
+        controller.fetchProducts().then((_) {
+          final foundProduct = controller.getProductById(widget.productId);
+          setState(() {
+            if (foundProduct != null) {
+              product = foundProduct;
+            }
+            _isLoading = false;
+          });
+        });
+      }
+    });
   }
 
   @override
@@ -39,20 +65,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
-  Product _getProductById(String id) {
-    for (var collection in DummyData.allCollections) {
-      for (var product in collection.products) {
-        if (product.id == id) {
-          return product;
-        }
-      }
-    }
-    // Default product if not found
-    return DummyData.ethnicSaree;
-  }
-
   void _openWhatsApp() {
-    // WhatsApp link would be opened here
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Redirecting to WhatsApp...'),
@@ -63,7 +76,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _sendEmail() {
-    // Email link would be opened here
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Opening email...'),
@@ -76,6 +88,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.cream,
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -176,7 +199,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 );
               },
               child: Image.network(
-                product.galleryImages[_selectedImageIndex],
+                product.galleryImages.isNotEmpty
+                    ? product.galleryImages[_selectedImageIndex]
+                    : product.imageUrl,
                 key: ValueKey<int>(_selectedImageIndex),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
@@ -198,47 +223,53 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SizedBox(height: isMobile ? 16 : 20),
 
         // Thumbnail Gallery
-        SizedBox(
-          height: isMobile ? 80 : 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: product.galleryImages.length,
-            itemBuilder: (context, index) {
-              final isSelected = _selectedImageIndex == index;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedImageIndex = index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: isMobile ? 80 : 100,
-                  height: isMobile ? 80 : 100,
-                  margin: const EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: isSelected ? AppColors.gold : AppColors.border,
-                      width: isSelected ? 2 : 1,
+        if (product.galleryImages.isNotEmpty)
+          SizedBox(
+            height: isMobile ? 80 : 100,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: product.galleryImages.length,
+              itemBuilder: (context, index) {
+                final isSelected = _selectedImageIndex == index;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedImageIndex = index),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: isMobile ? 80 : 100,
+                    height: isMobile ? 80 : 100,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: isSelected ? AppColors.gold : AppColors.border,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.gold.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                              ),
+                            ]
+                          : [],
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.gold.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: Image.network(
-                      product.galleryImages[index],
-                      fit: BoxFit.cover,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: Image.network(
+                        product.galleryImages[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: AppColors.beige,
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }
@@ -280,7 +311,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
         // Price
         Text(
-          product.price,
+          '₹${product.price.toStringAsFixed(2)}',
           style: GoogleFonts.playfairDisplay(
             fontSize: isMobile ? 28 : 32,
             fontWeight: FontWeight.w700,
@@ -310,22 +341,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SizedBox(height: isMobile ? 24 : 32),
 
         // Material/Fabric Details
-        _buildDetailSection(
-          title: 'Material & Details',
-          content: product.material,
-          isMobile: isMobile,
-          delay: 600,
-        ),
-        SizedBox(height: isMobile ? 20 : 28),
+        if (product.material.isNotEmpty)
+          _buildDetailSection(
+            title: 'Material & Details',
+            content: product.material,
+            isMobile: isMobile,
+            delay: 600,
+          ),
+        if (product.material.isNotEmpty) SizedBox(height: isMobile ? 20 : 28),
 
         // Care Instructions
-        _buildDetailSection(
-          title: 'Care Instructions',
-          content: product.careInstructions,
-          isMobile: isMobile,
-          delay: 700,
-        ),
-        SizedBox(height: isMobile ? 28 : 40),
+        if (product.careInstructions.isNotEmpty)
+          _buildDetailSection(
+            title: 'Care Instructions',
+            content: product.careInstructions,
+            isMobile: isMobile,
+            delay: 700,
+          ),
+        if (product.careInstructions.isNotEmpty)
+          SizedBox(height: isMobile ? 28 : 40),
 
         // Action Buttons
         _buildActionButtons(isMobile),
@@ -414,79 +448,76 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   /// Related Products Section
   Widget _buildRelatedProducts(bool isMobile) {
-    // Get related products from same category
-    final relatedProducts = DummyData.allCollections
-        .firstWhere(
-          (collection) => collection.id == product.category,
-          orElse: () => DummyData.allCollections[0],
-        )
-        .products
-        .where((p) => p.id != product.id)
-        .take(3)
-        .toList();
+    return Consumer<ProductController>(
+      builder: (context, controller, child) {
+        final relatedProducts = controller
+            .getProductsByCategory(product.category)
+            .where((p) => p.id != product.id)
+            .take(3)
+            .toList();
 
-    if (relatedProducts.isEmpty) return const SizedBox.shrink();
+        if (relatedProducts.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 40,
-        vertical: isMobile ? 40 : 60,
-      ),
-      color: AppColors.ivory,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Related Products',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: isMobile ? 28 : 36,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkBrown,
-            ),
-          ).animate().fadeIn().slideX(begin: -0.1, end: 0),
-          SizedBox(height: isMobile ? 24 : 32),
-
-          // Related Products Grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = isMobile ? 1 : 3;
-
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: isMobile ? 16 : 24,
-                  mainAxisSpacing: isMobile ? 16 : 24,
-                  childAspectRatio: 0.65,
-                ),
-                itemCount: relatedProducts.length,
-                itemBuilder: (context, index) {
-                  return _buildRelatedProductCard(relatedProducts[index])
-                      .animate()
-                      .fadeIn(delay: (index * 150).ms, duration: 600.ms)
-                      .slideY(begin: 0.2, end: 0);
-                },
-              );
-            },
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 20 : 40,
+            vertical: isMobile ? 40 : 60,
           ),
-        ],
-      ),
+          color: AppColors.ivory,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Related Products',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: isMobile ? 28 : 36,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkBrown,
+                ),
+              ).animate().fadeIn().slideX(begin: -0.1, end: 0),
+              SizedBox(height: isMobile ? 24 : 32),
+
+              // Related Products Grid
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = isMobile ? 1 : 3;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: isMobile ? 16 : 24,
+                      mainAxisSpacing: isMobile ? 16 : 24,
+                      childAspectRatio: 0.65,
+                    ),
+                    itemCount: relatedProducts.length,
+                    itemBuilder: (context, index) {
+                      return _buildRelatedProductCard(relatedProducts[index])
+                          .animate()
+                          .fadeIn(delay: (index * 150).ms, duration: 600.ms)
+                          .slideY(begin: 0.2, end: 0);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   /// Related Product Card
-  Widget _buildRelatedProductCard(Product relatedProduct) {
+  Widget _buildRelatedProductCard(ProductModel relatedProduct) {
     return _RelatedProductCard(
       relatedProduct: relatedProduct,
       onTap: () {
-        // Navigate to related product
         setState(() {
           product = relatedProduct;
           _selectedImageIndex = 0;
         });
-        // Scroll to top
         _scrollController.animateTo(
           0,
           duration: const Duration(milliseconds: 500),
@@ -498,7 +529,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 }
 
 class _RelatedProductCard extends StatefulWidget {
-  final Product relatedProduct;
+  final ProductModel relatedProduct;
   final VoidCallback onTap;
 
   const _RelatedProductCard({
@@ -551,6 +582,11 @@ class _RelatedProductCardState extends State<_RelatedProductCard> {
                       child: Image.network(
                         widget.relatedProduct.imageUrl,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: AppColors.beige,
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -573,7 +609,7 @@ class _RelatedProductCardState extends State<_RelatedProductCard> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      widget.relatedProduct.price,
+                      '₹${widget.relatedProduct.price.toStringAsFixed(2)}',
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
