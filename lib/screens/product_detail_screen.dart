@@ -23,7 +23,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  late ProductModel product;
+  ProductModel? product;
   int _selectedImageIndex = 0;
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = true;
@@ -90,11 +90,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.cream,
         body: Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+          ),
+        ),
+      );
+    }
+
+    if (product == null) {
+      return Scaffold(
+        backgroundColor: AppColors.cream,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Product Not Found',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkBrown,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ],
           ),
         ),
       );
@@ -199,9 +225,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 );
               },
               child: Image.network(
-                product.galleryImages.isNotEmpty
-                    ? product.galleryImages[_selectedImageIndex]
-                    : product.imageUrl,
+                product!.galleryImages.isNotEmpty
+                    ? product!.galleryImages[_selectedImageIndex]
+                    : product!.imageUrl,
                 key: ValueKey<int>(_selectedImageIndex),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
@@ -223,12 +249,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SizedBox(height: isMobile ? 16 : 20),
 
         // Thumbnail Gallery
-        if (product.galleryImages.isNotEmpty)
+        if (product!.galleryImages.isNotEmpty)
           SizedBox(
             height: isMobile ? 80 : 100,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: product.galleryImages.length,
+              itemCount: product!.galleryImages.length,
               itemBuilder: (context, index) {
                 final isSelected = _selectedImageIndex == index;
                 return GestureDetector(
@@ -256,7 +282,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(3),
                       child: Image.network(
-                        product.galleryImages[index],
+                        product!.galleryImages[index],
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
@@ -281,7 +307,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         // Product Name
         Text(
-          product.name,
+          product!.name,
           style: GoogleFonts.playfairDisplay(
             fontSize: isMobile ? 32 : 40,
             fontWeight: FontWeight.w700,
@@ -294,7 +320,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
         // Price
         Text(
-          '₹${product.price.toStringAsFixed(2)}',
+          '₹${product!.price.toStringAsFixed(2)}',
           style: GoogleFonts.playfairDisplay(
             fontSize: isMobile ? 28 : 32,
             fontWeight: FontWeight.w700,
@@ -303,18 +329,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ).animate().fadeIn(delay: 300.ms),
         SizedBox(height: isMobile ? 20 : 28),
 
-        // Description
         Text(
-          'Description',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: isMobile ? 18 : 20,
-            fontWeight: FontWeight.w600,
-            color: AppColors.darkBrown,
-          ),
-        ).animate().fadeIn(delay: 400.ms),
-        const SizedBox(height: 8),
-        Text(
-          product.description,
+          product!.description,
           style: GoogleFonts.poppins(
             fontSize: isMobile ? 14 : 15,
             color: AppColors.darkBrown,
@@ -324,24 +340,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SizedBox(height: isMobile ? 24 : 32),
 
         // Material/Fabric Details
-        if (product.material.isNotEmpty)
+        if (product!.material.isNotEmpty)
           _buildDetailSection(
             title: 'Material & Details',
-            content: product.material,
+            content: product!.material,
             isMobile: isMobile,
             delay: 600,
           ),
-        if (product.material.isNotEmpty) SizedBox(height: isMobile ? 20 : 28),
+        if (product!.material.isNotEmpty) SizedBox(height: isMobile ? 20 : 28),
 
         // Care Instructions
-        if (product.careInstructions.isNotEmpty)
+        if (product!.careInstructions.isNotEmpty)
           _buildDetailSection(
             title: 'Care Instructions',
-            content: product.careInstructions,
+            content: product!.careInstructions,
             isMobile: isMobile,
             delay: 700,
           ),
-        if (product.careInstructions.isNotEmpty)
+        if (product!.careInstructions.isNotEmpty)
           SizedBox(height: isMobile ? 28 : 40),
 
         // Action Buttons
@@ -435,7 +451,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       builder: (context, controller, child) {
         final relatedProducts = controller
             .products
-            .where((p) => p.id != product.id)
+            .where((p) => p.id != product!.id)
             .take(3)
             .toList();
 
