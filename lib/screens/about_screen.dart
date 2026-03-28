@@ -172,7 +172,6 @@ class AboutScreen extends StatelessWidget {
       child: Image.asset(
         'assets/images/sona.jpeg',
         fit: BoxFit.contain,
-        height: 400,
       ),
     );
   }
