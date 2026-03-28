@@ -23,8 +23,13 @@ class AppRoutes {
       case collections:
         return _fadeRoute(const CollectionsScreen());
       case productDetail:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return _fadeRoute(ProductDetailScreen(productId: args?['id'] ?? '1'));
+        String productId = '1';
+        if (settings.arguments is String) {
+          productId = settings.arguments as String;
+        } else if (settings.arguments is Map<String, dynamic>) {
+          productId = (settings.arguments as Map<String, dynamic>)['id'] ?? '1';
+        }
+        return _fadeRoute(ProductDetailScreen(productId: productId));
       case gallery:
         return _fadeRoute(const GalleryScreen());
       case contact:

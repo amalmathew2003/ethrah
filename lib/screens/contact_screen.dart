@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../controller/product_controller.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
-import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/common/custom_button.dart';
@@ -52,26 +53,32 @@ class _ContactScreenState extends State<ContactScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const AppNavBar(currentRoute: '/contact')
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: -0.2, end: 0),
+      body: Consumer<ProductController>(
+        builder: (context, controller, child) {
+          final brandInfo = controller.brandInfo;
 
-            // Header
-            _buildHeader(isMobile),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const AppNavBar(currentRoute: '/contact')
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0),
 
-            // Contact Section
-            _buildContactSection(isMobile),
+                // Header
+                _buildHeader(isMobile),
 
-            // Map Section
-            _buildMapSection(isMobile),
+                // Contact Section
+                _buildContactSection(isMobile, brandInfo),
 
-            const AppFooter(),
-          ],
-        ),
+                // Map Section
+                _buildMapSection(isMobile),
+
+                const AppFooter(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -114,7 +121,7 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   /// Contact Section with Form and Information
-  Widget _buildContactSection(bool isMobile) {
+  Widget _buildContactSection(bool isMobile, dynamic brandInfo) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -127,7 +134,7 @@ class _ContactScreenState extends State<ContactScreen> {
               children: [
                 _buildContactForm(isMobile),
                 SizedBox(height: isMobile ? 40 : 60),
-                _buildContactInfo(isMobile),
+                _buildContactInfo(isMobile, brandInfo),
               ],
             )
           : Row(
@@ -141,7 +148,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
                 const SizedBox(width: 60),
                 Expanded(
-                  child: _buildContactInfo(isMobile)
+                  child: _buildContactInfo(isMobile, brandInfo)
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 800.ms)
                       .slideX(begin: 0.1, end: 0),
@@ -307,7 +314,7 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   /// Contact Information
-  Widget _buildContactInfo(bool isMobile) {
+  Widget _buildContactInfo(bool isMobile, dynamic brandInfo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -325,7 +332,7 @@ class _ContactScreenState extends State<ContactScreen> {
         _buildContactCard(
           icon: Icons.email_outlined,
           title: 'Email',
-          value: DummyData.brandInfo.email,
+          value: brandInfo?.email ?? 'contact@ethrah.com',
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -340,7 +347,7 @@ class _ContactScreenState extends State<ContactScreen> {
         _buildContactCard(
           icon: Icons.call_outlined,
           title: 'WhatsApp',
-          value: DummyData.brandInfo.whatsappNumber,
+          value: brandInfo?.whatsappNumber ?? '+91 999 000 0000',
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -355,7 +362,7 @@ class _ContactScreenState extends State<ContactScreen> {
         _buildContactCard(
           icon: Icons.camera_alt_outlined,
           title: 'Instagram',
-          value: '@${DummyData.brandInfo.instagramHandle}',
+          value: brandInfo != null ? '@${brandInfo.instagramHandle}' : '@ethrah_official',
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

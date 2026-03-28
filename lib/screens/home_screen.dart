@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
-import '../data/dummy_data.dart';
+
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/common/custom_button.dart';
@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch products when home screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductController>().fetchProducts();
+      context.read<ProductController>().fetchAllData();
     });
   }
 
@@ -35,34 +35,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Navigation Bar
-            const AppNavBar(currentRoute: AppRoutes.home)
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: -0.2, end: 0),
+      body: Consumer<ProductController>(
+        builder: (context, productController, child) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Navigation Bar
+                const AppNavBar(currentRoute: AppRoutes.home)
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0),
 
-            // Hero Banner Section
-            _buildHeroBanner(isMobile),
+                // Hero Banner Section
+                _buildHeroBanner(isMobile),
 
-            // Featured Collections Section
-            _buildFeaturedCollections(isMobile),
+                // Featured Collections Section
+                _buildFeaturedCollections(isMobile, productController),
 
-            // About Preview Section
-            _buildAboutPreview(isMobile),
+                // About Preview Section
+                _buildAboutPreview(isMobile, productController),
 
-            // Gallery Preview Section
-            _buildGalleryPreview(isMobile),
+                // Gallery Preview Section
+                _buildGalleryPreview(isMobile, productController),
 
-            // CTA Section
-            _buildCTASection(isMobile),
+                // CTA Section
+                _buildCTASection(isMobile),
 
-            // Footer
-            const AppFooter(),
-          ],
-        ),
+                // Footer
+                const AppFooter(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -151,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Featured Collections Section
-  Widget _buildFeaturedCollections(bool isMobile) {
+  Widget _buildFeaturedCollections(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -186,8 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: isMobile ? 40 : 60),
 
           // Products Grid
-          Consumer<ProductController>(
-            builder: (context, productController, child) {
+          // Removed duplicate Consumer here as it is now at the top level
+          Builder(
+            builder: (context) {
               if (productController.isLoading) {
                 return const Center(
                   child: CircularProgressIndicator(
@@ -262,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// About Preview Section
-  Widget _buildAboutPreview(bool isMobile) {
+  Widget _buildAboutPreview(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -301,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ).animate().fadeIn().slideX(begin: 0.1, end: 0),
                 SizedBox(height: isMobile ? 16 : 24),
                 Text(
-                  DummyData.brandInfo.story,
+                  productController.brandInfo?.story ?? 'Welcome to Ethrah, where tradition meets modern elegance.',
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14 : 16,
                     color: AppColors.darkBrown,
@@ -325,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Gallery Preview Section (Instagram Grid Style)
-  Widget _buildGalleryPreview(bool isMobile) {
+  Widget _buildGalleryPreview(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -358,6 +363,12 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, constraints) {
               final crossAxisCount = isMobile ? 2 : 4;
 
+              final displayCount = productController.galleryItems.length > 8 ? 8 : productController.galleryItems.length;
+
+              if (displayCount == 0) {
+                return const SizedBox.shrink(); // Hide if empty
+              }
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -367,10 +378,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSpacing: isMobile ? 12 : 16,
                   childAspectRatio: 1,
                 ),
-                itemCount: 8,
+                itemCount: displayCount,
                 itemBuilder: (context, index) {
                   return GalleryCard(
-                    item: DummyData.galleryItems[index],
+                    item: productController.galleryItems[index],
                   )
                       .animate()
                       .fadeIn(delay: (index * 100).ms, duration: 400.ms)

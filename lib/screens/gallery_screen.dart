@@ -1,8 +1,10 @@
+import 'package:ethrah_app/controller/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
-import '../data/dummy_data.dart';
+
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/cards/gallery_card.dart';
@@ -15,24 +17,15 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen> {
-  String _selectedFilter = 'all';
-  late List _filteredGallery;
-
   @override
   void initState() {
     super.initState();
-    _updateFilter();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductController>().fetchGallery();
+    });
   }
 
-  void _updateFilter() {
-    if (_selectedFilter == 'all') {
-      _filteredGallery = DummyData.galleryItems;
-    } else {
-      _filteredGallery = DummyData.galleryItems
-          .where((item) => item.category == _selectedFilter)
-          .toList();
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,26 +33,29 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const AppNavBar(currentRoute: '/gallery')
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: -0.2, end: 0),
+      body: Consumer<ProductController>(
+        builder: (context, controller, child) {
+          final galleryItems = controller.galleryItems;
+          
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const AppNavBar(currentRoute: '/gallery')
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0),
 
-            // Header
-            _buildHeader(isMobile),
+                // Header
+                _buildHeader(isMobile),
 
-            // Filter Section
-            _buildFilterSection(isMobile),
+                // Gallery Grid
+                _buildGalleryGrid(isMobile, galleryItems),
 
-            // Gallery Grid
-            _buildGalleryGrid(isMobile),
-
-            const AppFooter(),
-          ],
-        ),
+                const AppFooter(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -101,93 +97,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
-  /// Filter Section with Category Tabs
-  Widget _buildFilterSection(bool isMobile) {
-    final categories = [
-      'all',
-      'Ethnic',
-      'Contemporary',
-      'Jewelry',
-    ];
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 40,
-        vertical: isMobile ? 20 : 32,
-      ),
-      color: AppColors.cream,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: categories.asMap().entries.map((entry) {
-            final index = entry.key;
-            final category = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: _buildFilterTab(
-                label: category == 'all' ? 'All' : category,
-                value: category == 'all' ? 'all' : category,
-              ),
-            )
-                .animate()
-                .fadeIn(delay: (index * 50).ms)
-                .slideX(begin: 0.1, end: 0);
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  /// Individual Filter Tab
-  Widget _buildFilterTab({
-    required String label,
-    required String value,
-  }) {
-    final isActive = _selectedFilter == value;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = value;
-          _updateFilter();
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.gold : Colors.transparent,
-          border: Border.all(
-            color: isActive ? AppColors.gold : AppColors.border,
-            width: isActive ? 1.5 : 1,
-          ),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isActive ? Colors.white : AppColors.darkBrown,
-          ),
-        ),
-      ),
-    );
-  }
 
   /// Gallery Grid
-  Widget _buildGalleryGrid(bool isMobile) {
+  Widget _buildGalleryGrid(bool isMobile, List galleryItems) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -202,7 +115,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
             child: GridView.builder(
-              key: ValueKey<String>(_selectedFilter),
+              key: const ValueKey<String>('gallery_grid'),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -211,11 +124,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 mainAxisSpacing: isMobile ? 8 : 16,
                 childAspectRatio: 1,
               ),
-              itemCount: _filteredGallery.length,
+              itemCount: galleryItems.length,
               itemBuilder: (context, index) {
                 return GalleryCard(
-                  item: _filteredGallery[index],
-                  onTap: () => _showGalleryModal(index),
+                  item: galleryItems[index],
+                  onTap: () => _showGalleryModal(index, galleryItems),
                 )
                     .animate()
                     .fadeIn(delay: (index * 50).ms, duration: 400.ms)
@@ -229,7 +142,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   /// Modal to view full image
-  void _showGalleryModal(int index) {
+  void _showGalleryModal(int index, List galleryItems) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -261,7 +174,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: Image.network(
-                        _filteredGallery[index].imageUrl,
+                        galleryItems[index].imageUrl,
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -296,25 +209,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _filteredGallery[index].title,
+                            galleryItems[index].title,
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
-                          if (_filteredGallery[index].category != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              _filteredGallery[index].category!,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: AppColors.gold,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ),

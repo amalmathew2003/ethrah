@@ -8,6 +8,7 @@ import '../config/app_routes.dart';
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/cards/product_card.dart';
+import '../models/product_model.dart';
 
 class CollectionsScreen extends StatefulWidget {
   const CollectionsScreen({super.key});
@@ -29,14 +30,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     });
   }
 
-  List _getFilteredProducts(List allProducts) {
-    if (_selectedFilter == 'all') {
-      return allProducts;
-    }
-    return allProducts
-        .where((product) =>
-            product.category.toLowerCase() == _selectedFilter.toLowerCase())
-        .toList();
+  List<ProductModel> _getFilteredProducts(List<ProductModel> allProducts) {
+    if (_selectedFilter == 'all') return allProducts;
+    return allProducts.where((p) => p.category.toLowerCase() == _selectedFilter.toLowerCase()).toList();
   }
 
   @override
@@ -55,9 +51,6 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
 
             // Header
             _buildHeader(isMobile),
-
-            // Filter Section
-            _buildFilterSection(isMobile),
 
             // Collections Grid
             _buildCollectionsGrid(isMobile),
@@ -106,85 +99,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     );
   }
 
-  /// Filter Section with Category Tabs
-  Widget _buildFilterSection(bool isMobile) {
-    final filters = [
-      {'label': 'All Collections', 'value': 'all'},
-      {'label': 'Ethnic Wear', 'value': 'ethnic'},
-      {'label': 'Contemporary', 'value': 'contemporary'},
-      {'label': 'Jewellery', 'value': 'jewellery'},
-    ];
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 40,
-        vertical: isMobile ? 24 : 40,
-      ),
-      color: AppColors.cream,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: filters.asMap().entries.map((entry) {
-            final index = entry.key;
-            final filter = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _buildFilterButton(
-                label: filter['label'] as String,
-                value: filter['value'] as String,
-              ),
-            )
-                .animate()
-                .fadeIn(delay: (index * 50).ms)
-                .slideX(begin: 0.1, end: 0);
-          }).toList(),
-        ),
-      ),
-    );
-  }
 
-  /// Individual Filter Button
-  Widget _buildFilterButton({
-    required String label,
-    required String value,
-  }) {
-    final isActive = _selectedFilter == value;
 
-    return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.gold : Colors.transparent,
-          border: Border.all(
-            color: isActive ? AppColors.gold : AppColors.border,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isActive ? Colors.white : AppColors.darkBrown,
-          ),
-        ),
-      ),
-    );
-  }
 
   /// Collections Grid
   Widget _buildCollectionsGrid(bool isMobile) {
@@ -239,6 +156,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             child: Column(
               key: ValueKey<String>(_selectedFilter),
               children: [
+                _buildFilterSection(isMobile, controller.products),
+                SizedBox(height: isMobile ? 24 : 32),
                 _buildCategoryHeader(isMobile),
                 SizedBox(height: isMobile ? 24 : 32),
                 _buildProductsGrid(filteredProducts, isMobile),
@@ -249,18 +168,60 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
       },
     );
   }
+  /// Filter Section with Category Tabs
+  Widget _buildFilterSection(bool isMobile, List<ProductModel> allProducts) {
+    final categories = ['all', ...allProducts.map((p) => p.category).toSet().toList()];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 0,
+        vertical: 10,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: categories.map((category) {
+            final isActive = _selectedFilter.toLowerCase() == category.toLowerCase();
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedFilter = category),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isActive ? AppColors.gold : Colors.transparent,
+                    border: Border.all(
+                      color: isActive ? AppColors.gold : AppColors.border,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    category.capitalize(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isActive ? Colors.white : AppColors.darkBrown,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1, end: 0);
+  }
 
   /// Category Header
   Widget _buildCategoryHeader(bool isMobile) {
-    String categoryName = _selectedFilter == 'all'
-        ? 'All Products'
-        : _selectedFilter.capitalize();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          categoryName,
+          'Our Fine Collection',
           style: GoogleFonts.playfairDisplay(
             fontSize: isMobile ? 28 : 36,
             fontWeight: FontWeight.w600,

@@ -42,14 +42,20 @@ class GalleryItem {
   final String id;
   final String imageUrl;
   final String title;
-  final String? category;
 
   GalleryItem({
     required this.id,
     required this.imageUrl,
     required this.title,
-    this.category,
   });
+
+  factory GalleryItem.fromJson(Map<String, dynamic> json) {
+    return GalleryItem(
+      id: json['id']?.toString() ?? '',
+      imageUrl: json['image_url'] ?? '',
+      title: json['title'] ?? '',
+    );
+  }
 }
 
 class BrandInfo {
@@ -76,4 +82,19 @@ class BrandInfo {
     required this.whatsappNumber,
     required this.email,
   });
+
+  factory BrandInfo.fromJson(Map<String, dynamic> json) {
+    return BrandInfo(
+      name: json['name'] ?? '',
+      tagline: json['tagline'] ?? '',
+      story: json['story'] ?? '',
+      mission: json['mission'] ?? '',
+      vision: json['vision'] ?? '',
+      founderNote: json['founder_note'] ?? '',
+      founderName: json['founder_name'] ?? '',
+      instagramHandle: json['instagram_handle'] ?? '',
+      whatsappNumber: json['whatsapp_number'] ?? '',
+      email: json['email'] ?? '',
+    );
+  }
 }

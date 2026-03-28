@@ -290,24 +290,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ).animate().fadeIn().slideY(begin: 0.1, end: 0),
         SizedBox(height: isMobile ? 12 : 16),
 
-        // Category Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.lightGold.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            product.category.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gold,
-              letterSpacing: 1,
-            ),
-          ),
-        ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1, end: 0),
-        SizedBox(height: isMobile ? 16 : 24),
+
 
         // Price
         Text(
@@ -451,7 +434,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Consumer<ProductController>(
       builder: (context, controller, child) {
         final relatedProducts = controller
-            .getProductsByCategory(product.category)
+            .products
             .where((p) => p.id != product.id)
             .take(3)
             .toList();
