@@ -88,15 +88,15 @@ class ProductController with ChangeNotifier {
         // Fallback to default brand info if table is missing or empty
         _brandInfo = BrandInfo(
           name: 'Ethrah',
-          tagline: 'Timeless Elegance, Modern Tradition',
-          story: 'Founded in the heart of Kerala, Ethrah is dedicated to preserving the rich heritage of jewelry making while embracing contemporary designs. Every piece we create tells a story of craftsmanship, passion, and elegance.',
-          mission: 'Our mission is to create exquisite jewelry that makes every woman feel extraordinary, blending artistic tradition with modern sophistication.',
-          vision: 'To be the preferred choice for discerning individuals seeking unique, high-quality jewelry that celebrates cultural heritage and contemporary style.',
-          founderNote: 'Ethrah was born out of a desire to create jewelry that isn\'t just an accessory, but an extension of one\'s personality.',
-          founderName: 'Ethrah Creative Team',
-          instagramHandle: 'ethrah_official',
-          whatsappNumber: '+91 999 000 0000',
-          email: 'contact@ethrah.com',
+          tagline: 'Where Elegance Meets Tradition',
+          story: 'Ethrah means abundance, beauty and inner radiance. It represents a person who carries elegance, confidence and a natural glow that shines from within. Our brand is inspired by the timeless beauty of Kerala.',
+          mission: 'To create exquisite ethnic and contemporary wear that empowers women to express their identity with pride and elegance.',
+          vision: 'To become the go-to destination for women seeking premium, ethically-crafted ethnic wear and jewelry that transcends generations.',
+          founderNote: 'This brand was born from a love for timeless style and meaningful design. Every piece we sell—whether clothing or jewelry—is chosen to help you express yourself with confidence and ease. We believe in quality, simplicity, and details that make a difference.',
+          founderName: 'Sandra & Sona',
+          instagramHandle: 'ethrah.in',
+          whatsappNumber: '+91 98765 43210',
+          email: 'hello@ethrah.in',
         );
       }
     } catch (e) {
@@ -105,15 +105,15 @@ class ProductController with ChangeNotifier {
       if (_brandInfo == null) {
         _brandInfo = BrandInfo(
           name: 'Ethrah',
-          tagline: 'Timeless Elegance, Modern Tradition',
-          story: 'Preserving heritage with elegance.',
-          mission: 'To create exquisite jewelry for the modern woman.',
+          tagline: 'Where Elegance Meets Tradition',
+          story: 'Ethrah means abundance, beauty and inner radiance.',
+          mission: 'To create exquisite ethnic and contemporary wear.',
           vision: 'To be a global symbol of craftsmanship.',
-          founderNote: 'Our journey is built on passion for art and tradition.',
-          founderName: 'Team Ethrah',
-          instagramHandle: 'ethrah_official',
-          whatsappNumber: '+91 999 000 0000',
-          email: 'contact@ethrah.com',
+          founderNote: 'This brand was born from a love for timeless style and meaningful design.',
+          founderName: 'Sandra & Sona',
+          instagramHandle: 'ethrah.in',
+          whatsappNumber: '+91 98765 43210',
+          email: 'hello@ethrah.in',
         );
       }
     }

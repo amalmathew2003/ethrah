@@ -11,6 +11,7 @@ import '../widgets/common/app_footer.dart';
 import '../widgets/common/custom_button.dart';
 import '../widgets/cards/product_card.dart';
 import '../widgets/cards/gallery_card.dart';
+import '../data/dummy_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -282,8 +283,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
+                child: Image.asset(
+                  'assets/images/home_about.png',
                   fit: BoxFit.cover,
                   height: 400,
                 ),
@@ -306,7 +307,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ).animate().fadeIn().slideX(begin: 0.1, end: 0),
                 SizedBox(height: isMobile ? 16 : 24),
                 Text(
-                  productController.brandInfo?.story ?? 'Welcome to Ethrah, where tradition meets modern elegance.',
+                  (productController.brandInfo?.story != null &&
+                          productController.brandInfo!.story.isNotEmpty)
+                      ? productController.brandInfo!.story
+                      : DummyData.brandInfo.story,
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14 : 16,
                     color: AppColors.darkBrown,

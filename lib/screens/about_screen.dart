@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../controller/product_controller.dart';
 import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
+import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 
@@ -151,7 +152,9 @@ class AboutScreen extends StatelessWidget {
         ),
         SizedBox(height: isMobile ? 16 : 24),
         Text(
-          brandInfo?.story ?? 'Welcome to Ethrah, where tradition meets modern elegance.',
+          (brandInfo?.story != null && brandInfo!.story.isNotEmpty)
+              ? brandInfo!.story
+              : DummyData.brandInfo.story,
           style: GoogleFonts.poppins(
             fontSize: isMobile ? 14 : 16,
             color: AppColors.darkBrown,
@@ -168,7 +171,7 @@ class AboutScreen extends StatelessWidget {
       borderRadius: BorderRadius.circular(4),
       child: Image.asset(
         'assets/images/sona.jpeg',
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         height: 400,
       ),
     );
@@ -192,7 +195,10 @@ class AboutScreen extends StatelessWidget {
               Expanded(
                 child: _buildMVCard(
                   title: 'Our Mission',
-                  content: brandInfo?.mission ?? 'To provide exquisite jewelry with timeless designs.',
+                  content: (brandInfo?.mission != null &&
+                          brandInfo!.mission.isNotEmpty)
+                      ? brandInfo!.mission
+                      : DummyData.brandInfo.mission,
                   icon: Icons.bolt,
                   isMobile: isMobile,
                 ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
@@ -202,7 +208,10 @@ class AboutScreen extends StatelessWidget {
               Expanded(
                 child: _buildMVCard(
                   title: 'Our Vision',
-                  content: brandInfo?.vision ?? 'To be a symbol of elegance and craftsmanship globally.',
+                  content: (brandInfo?.vision != null &&
+                          brandInfo!.vision.isNotEmpty)
+                      ? brandInfo!.vision
+                      : DummyData.brandInfo.vision,
                   icon: Icons.visibility,
                   isMobile: isMobile,
                 )
@@ -347,7 +356,10 @@ class AboutScreen extends StatelessWidget {
                 SizedBox(height: isMobile ? 8 : 16),
                 // Quote Text
                 Text(
-                  brandInfo?.founderNote ?? 'Every piece of jewelry we create is a masterpiece of tradition and modernity.',
+                  (brandInfo?.founderNote != null &&
+                          brandInfo!.founderNote.isNotEmpty)
+                      ? brandInfo!.founderNote
+                      : DummyData.brandInfo.founderNote,
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14 : 16,
                     color: AppColors.darkBrown,
