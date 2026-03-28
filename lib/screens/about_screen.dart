@@ -166,8 +166,8 @@ class AboutScreen extends StatelessWidget {
   Widget _buildStoryImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      child: Image.network(
-        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
+      child: Image.asset(
+        'assets/images/sona.jpeg',
         fit: BoxFit.cover,
         height: 400,
       ),
