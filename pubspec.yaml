@@ -16,12 +16,20 @@ dependencies:
   google_fonts: ^6.1.0
   cupertino_icons: ^1.0.2
 
-  # State Management (optional, for future features)
-  provider: ^6.0.0
+  # State Management
+  provider: ^6.1.5+1
 
-  # Navigation & Routing
-  flutter_native_splash: ^2.3.0
+  # Animations & UI Enhancements
   flutter_animate: ^4.5.2
+
+  # Splash Screen
+  flutter_native_splash: ^2.3.0
+
+  # Supabase
+  supabase_flutter: ^2.12.2
+
+  # Environment Variables
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -32,10 +40,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Fonts are loaded via google_fonts package (no local font files needed)
+  assets:
+    - .env
+    - assets/images/
 
 # Notes:
-# 1. Run: flutter pub get
-# 2. For web: flutter run -d chrome
-# 3. For responsive design: web uses LayoutBuilder and MediaQuery
-# 4. All fonts are loaded via google_fonts package for better performance
+# 1. Run: flutter clean
+# 2. Run: flutter pub get
+# 3. For web: flutter run -d chrome

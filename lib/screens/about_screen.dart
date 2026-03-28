@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../controller/product_controller.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
 import '../data/dummy_data.dart';
 import '../widgets/common/app_navbar.dart';
@@ -15,32 +17,38 @@ class AboutScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const AppNavBar(currentRoute: '/about')
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: -0.2, end: 0),
+      body: Consumer<ProductController>(
+        builder: (context, controller, child) {
+          final brandInfo = controller.brandInfo;
 
-            // Header Section
-            _buildHeader(isMobile),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const AppNavBar(currentRoute: '/about')
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0),
 
-            // Brand Story Section
-            _buildStorySection(isMobile),
+                // Header Section
+                _buildHeader(isMobile),
 
-            // Mission & Vision Section
-            _buildMissionVisionSection(isMobile),
+                // Brand Story Section
+                _buildStorySection(isMobile, brandInfo),
 
-            // Founder Note Section
-            _buildFounderSection(isMobile),
+                // Mission & Vision Section
+                _buildMissionVisionSection(isMobile, brandInfo),
 
-            // Values Section
-            _buildValuesSection(isMobile),
+                // Founder Note Section
+                _buildFounderSection(isMobile, brandInfo),
 
-            const AppFooter(),
-          ],
-        ),
+                // Values Section
+                _buildValuesSection(isMobile),
+
+                const AppFooter(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -84,7 +92,7 @@ class AboutScreen extends StatelessWidget {
   }
 
   /// Brand Story Section with Image and Text
-  Widget _buildStorySection(bool isMobile) {
+  Widget _buildStorySection(bool isMobile, dynamic brandInfo) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -98,7 +106,7 @@ class AboutScreen extends StatelessWidget {
           if (isMobile)
             Column(
               children: [
-                _buildStoryText(isMobile),
+                _buildStoryText(isMobile, brandInfo),
                 const SizedBox(height: 32),
                 _buildStoryImage(),
               ],
@@ -117,7 +125,7 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(width: 60),
                 Expanded(
                   flex: 1,
-                  child: _buildStoryText(isMobile)
+                  child: _buildStoryText(isMobile, brandInfo)
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 800.ms)
                       .slideX(begin: 0.1, end: 0),
@@ -130,7 +138,7 @@ class AboutScreen extends StatelessWidget {
   }
 
   /// Story Text Content
-  Widget _buildStoryText(bool isMobile) {
+  Widget _buildStoryText(bool isMobile, dynamic brandInfo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -144,7 +152,9 @@ class AboutScreen extends StatelessWidget {
         ),
         SizedBox(height: isMobile ? 16 : 24),
         Text(
-          DummyData.brandInfo.story,
+          (brandInfo?.story != null && brandInfo!.story.isNotEmpty)
+              ? brandInfo!.story
+              : DummyData.brandInfo.story,
           style: GoogleFonts.poppins(
             fontSize: isMobile ? 14 : 16,
             color: AppColors.darkBrown,
@@ -159,16 +169,15 @@ class AboutScreen extends StatelessWidget {
   Widget _buildStoryImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      child: Image.network(
-        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
-        fit: BoxFit.cover,
-        height: 400,
+      child: Image.asset(
+        'assets/images/sona.jpeg',
+        fit: BoxFit.contain,
       ),
     );
   }
 
   /// Mission & Vision Section
-  Widget _buildMissionVisionSection(bool isMobile) {
+  Widget _buildMissionVisionSection(bool isMobile, dynamic brandInfo) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -185,7 +194,10 @@ class AboutScreen extends StatelessWidget {
               Expanded(
                 child: _buildMVCard(
                   title: 'Our Mission',
-                  content: DummyData.brandInfo.mission,
+                  content: (brandInfo?.mission != null &&
+                          brandInfo!.mission.isNotEmpty)
+                      ? brandInfo!.mission
+                      : DummyData.brandInfo.mission,
                   icon: Icons.bolt,
                   isMobile: isMobile,
                 ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
@@ -195,7 +207,10 @@ class AboutScreen extends StatelessWidget {
               Expanded(
                 child: _buildMVCard(
                   title: 'Our Vision',
-                  content: DummyData.brandInfo.vision,
+                  content: (brandInfo?.vision != null &&
+                          brandInfo!.vision.isNotEmpty)
+                      ? brandInfo!.vision
+                      : DummyData.brandInfo.vision,
                   icon: Icons.visibility,
                   isMobile: isMobile,
                 )
@@ -282,7 +297,7 @@ class AboutScreen extends StatelessWidget {
   }
 
   /// Founder Section
-  Widget _buildFounderSection(bool isMobile) {
+  Widget _buildFounderSection(bool isMobile, dynamic brandInfo) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -340,7 +355,10 @@ class AboutScreen extends StatelessWidget {
                 SizedBox(height: isMobile ? 8 : 16),
                 // Quote Text
                 Text(
-                  DummyData.brandInfo.founderNote,
+                  (brandInfo?.founderNote != null &&
+                          brandInfo!.founderNote.isNotEmpty)
+                      ? brandInfo!.founderNote
+                      : DummyData.brandInfo.founderNote,
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14 : 16,
                     color: AppColors.darkBrown,
@@ -351,7 +369,7 @@ class AboutScreen extends StatelessWidget {
                 SizedBox(height: isMobile ? 20 : 32),
                 // Founder Name
                 Text(
-                  '— ${DummyData.brandInfo.founderName}',
+                  '— ${brandInfo?.founderName ?? 'Ethrah Creative Team'}',
                   style: GoogleFonts.playfairDisplay(
                     fontSize: isMobile ? 16 : 18,
                     fontWeight: FontWeight.w600,

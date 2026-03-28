@@ -1,14 +1,17 @@
+import 'package:ethrah_app/controller/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
-import '../data/dummy_data.dart';
+
 import '../widgets/common/app_navbar.dart';
 import '../widgets/common/app_footer.dart';
 import '../widgets/common/custom_button.dart';
 import '../widgets/cards/product_card.dart';
 import '../widgets/cards/gallery_card.dart';
+import '../data/dummy_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,39 +22,52 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Fetch products when home screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductController>().fetchAllData();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Navigation Bar
-            const AppNavBar(currentRoute: AppRoutes.home)
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .slideY(begin: -0.2, end: 0),
+      body: Consumer<ProductController>(
+        builder: (context, productController, child) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Navigation Bar
+                const AppNavBar(currentRoute: AppRoutes.home)
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: -0.2, end: 0),
 
-            // Hero Banner Section
-            _buildHeroBanner(isMobile),
+                // Hero Banner Section
+                _buildHeroBanner(isMobile),
 
-            // Featured Collections Section
-            _buildFeaturedCollections(isMobile),
+                // Featured Collections Section
+                _buildFeaturedCollections(isMobile, productController),
 
-            // About Preview Section
-            _buildAboutPreview(isMobile),
+                // About Preview Section
+                _buildAboutPreview(isMobile, productController),
 
-            // Gallery Preview Section
-            _buildGalleryPreview(isMobile),
+                // Gallery Preview Section
+                _buildGalleryPreview(isMobile, productController),
 
-            // CTA Section
-            _buildCTASection(isMobile),
+                // CTA Section
+                _buildCTASection(isMobile),
 
-            // Footer
-            const AppFooter(),
-          ],
-        ),
+                // Footer
+                const AppFooter(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -140,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Featured Collections Section
-  Widget _buildFeaturedCollections(bool isMobile) {
+  Widget _buildFeaturedCollections(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -175,31 +191,61 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: isMobile ? 40 : 60),
 
           // Products Grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = isMobile ? 1 : 3;
-              final childAspectRatio = isMobile ? 0.65 : 0.65;
-              final products = [
-                DummyData.ethnicSaree,
-                DummyData.contemporarySalwar,
-                DummyData.jewellerySets,
-              ];
+          // Removed duplicate Consumer here as it is now at the top level
+          Builder(
+            builder: (context) {
+              if (productController.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+                  ),
+                );
+              }
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: isMobile ? 16 : 24,
-                  mainAxisSpacing: isMobile ? 16 : 24,
-                  childAspectRatio: childAspectRatio,
-                ),
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return ProductCard(product: products[index])
-                      .animate()
-                      .fadeIn(delay: (index * 200).ms, duration: 600.ms)
-                      .slideY(begin: 0.2, end: 0);
+              if (productController.error != null) {
+                return Center(
+                  child: Text(
+                    'Error: ${productController.error}',
+                    style: GoogleFonts.poppins(color: AppColors.mediumBrown),
+                  ),
+                );
+              }
+
+              final products = productController.products.take(3).toList();
+
+              if (products.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No products available',
+                    style: GoogleFonts.poppins(color: AppColors.mediumBrown),
+                  ),
+                );
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = isMobile ? 1 : 3;
+                  final childAspectRatio = isMobile ? 0.65 : 0.65;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: isMobile ? 16 : 24,
+                      mainAxisSpacing: isMobile ? 16 : 24,
+                      childAspectRatio: childAspectRatio,
+                    ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        product: products[index],
+                      )
+                          .animate()
+                          .fadeIn(delay: (index * 200).ms, duration: 600.ms)
+                          .slideY(begin: 0.2, end: 0);
+                    },
+                  );
                 },
               );
             },
@@ -222,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// About Preview Section
-  Widget _buildAboutPreview(bool isMobile) {
+  Widget _buildAboutPreview(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -237,8 +283,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
+                child: Image.asset(
+                  'assets/images/home_about.png',
                   fit: BoxFit.cover,
                   height: 400,
                 ),
@@ -261,7 +307,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ).animate().fadeIn().slideX(begin: 0.1, end: 0),
                 SizedBox(height: isMobile ? 16 : 24),
                 Text(
-                  DummyData.brandInfo.story,
+                  (productController.brandInfo?.story != null &&
+                          productController.brandInfo!.story.isNotEmpty)
+                      ? productController.brandInfo!.story
+                      : DummyData.brandInfo.story,
                   style: GoogleFonts.poppins(
                     fontSize: isMobile ? 14 : 16,
                     color: AppColors.darkBrown,
@@ -285,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Gallery Preview Section (Instagram Grid Style)
-  Widget _buildGalleryPreview(bool isMobile) {
+  Widget _buildGalleryPreview(bool isMobile, ProductController productController) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -318,6 +367,12 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, constraints) {
               final crossAxisCount = isMobile ? 2 : 4;
 
+              final displayCount = productController.galleryItems.length > 8 ? 8 : productController.galleryItems.length;
+
+              if (displayCount == 0) {
+                return const SizedBox.shrink(); // Hide if empty
+              }
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -327,10 +382,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSpacing: isMobile ? 12 : 16,
                   childAspectRatio: 1,
                 ),
-                itemCount: 8,
+                itemCount: displayCount,
                 itemBuilder: (context, index) {
                   return GalleryCard(
-                    item: DummyData.galleryItems[index],
+                    item: productController.galleryItems[index],
                   )
                       .animate()
                       .fadeIn(delay: (index * 100).ms, duration: 400.ms)

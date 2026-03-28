@@ -101,21 +101,7 @@ class _GalleryCardState extends State<GalleryCard> {
                             .animate(target: _isHovered ? 1 : 0)
                             .fadeIn(duration: 300.ms)
                             .slideY(begin: 0.2, end: 0),
-                        if (widget.item.category != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.item.category!,
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              color: AppColors.gold,
-                              letterSpacing: 1.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          )
-                              .animate(target: _isHovered ? 1 : 0)
-                              .fadeIn(delay: 100.ms, duration: 300.ms)
-                              .slideY(begin: 0.2, end: 0),
-                        ],
+
                       ],
                     ),
                   ),
